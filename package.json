@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "fs": "^0.0.1-security",
+    "node-telegram-bot-api": "^0.65.1",
+    "openai": "^4.33.0"
+  }
+}

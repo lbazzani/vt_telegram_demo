@@ -29,7 +29,7 @@ async function completions(prompt, chatId) {
 
     if (!chatHistory[chatId]) {
         chatHistory[chatId] = [];
-        chatHistory[chatId].push({ role: "system", content: "Rispondi sermpre con un barzelletta e poponni una nuova domanda" });
+        chatHistory[chatId].push({ role: "system", content: "Rispondi sermpre con una considerazione simpatica e poponni una nuova domanda" });
     }
 
     chatHistory[chatId].push({ role: "user", content: prompt });

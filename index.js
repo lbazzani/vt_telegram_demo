@@ -3,8 +3,10 @@ const OpenAI = require("openai");
 const fs = require("fs");
 require("dotenv").config();
 
-
 console.log("Hello World!")
+
+
+const chatHistory = {};
 
 const bot=new TelegramBot(process.env.BOT_TOKEN,{polling:true});
 
@@ -20,6 +22,35 @@ async function transcribe(adioFile ) {
     });
   
     return(transcription.text);
+}
+
+async function completions(prompt, chatId) {
+    var response="";
+
+    if (!chatHistory[chatId]) {
+        chatHistory[chatId] = [];
+        chatHistory[chatId].push({ role: "system", content: "Rispondi sermpre con un barzelletta e poponni una nuova domanda" });
+    }
+
+    chatHistory[chatId].push({ role: "user", content: prompt });
+
+    try {
+        
+        response = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: chatHistory[chatId],
+        });
+    } catch (error) {
+        console.error(error);
+    }
+
+    const msg=response?.choices[0]?.message?.content;
+
+    chatHistory[chatId].push({ role: "assistant", content: msg });
+
+    console.log(msg);
+  
+    return(msg);
 }
 
 
@@ -39,12 +70,27 @@ bot.on('voice', (msg) => {
         const transcription= await transcribe(file);
         console.log(transcription);
         bot.sendMessage(chatId,'Ho capito che hai detto: '+transcription);  
+
+        //elaboro la risposta con openai
+        const completion= await completions(transcription, chatId);
+        
+        //mando un nuovo messaggio all'utente con la risposta
+        bot.sendMessage(chatId, completion);
+
     })();
         
 
 });
 
-
 bot.onText(/[a-zA-Z]+/g, (msg, match) => {
-    bot.sendMessage(chatId,'Hello World!');
+    (async () => {
+        const chatId = msg.chat.id;
+
+        //elaboro la risposta con openai
+        const completion= await completions(msg.text, chatId);
+        
+        //mando un nuovo messaggio all'utente con la risposta
+        bot.sendMessage(chatId, completion);
+
+    })();
 });
